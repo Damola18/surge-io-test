@@ -1,0 +1,25 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+a{
+  cursor: pointer;
+  text-transform: capitalize;
+}
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: local("Poppins"),
+   url("./fonts/Poppins-Black.ttf") format("truetype");
+  font-weight: bold;
+  }
