@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, CssBaseline,FormControlLabel, FormGroup, Grid, makeStyles,Paper,TextField, ThemeProvider, Typography } from '@material-ui/core'
+import {Backdrop, Box, Button, Checkbox, CssBaseline,Fade, FormControlLabel, FormGroup, Grid, InputLabel,makeStyles, Modal, Paper,TextField, ThemeProvider, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 
 const countries = [
@@ -15,6 +15,18 @@ const countries = [
     label:"Canada"
  }
 ];
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+};
 
 const useStyles = makeStyles((theme) => ({
     checkbox:{
@@ -41,6 +53,12 @@ const useStyles = makeStyles((theme) => ({
         position:"relative",
         top:"40px",
     },
+    modal:{
+        justifyContent:"center",
+        alignItems:"center",
+        width:"70%",
+        height:"70%",
+    }, 
     submit:{
         display:"flex",
         justifyContent:"center",
@@ -57,6 +75,11 @@ const useStyles = makeStyles((theme) => ({
 
 function SignIn() {
   const [country, setCountry] = useState("")
+
+  // Modal Triggers
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const handleChange = (e) => {
     setCountry(e.target.value)
@@ -143,13 +166,12 @@ function SignIn() {
                     </Typography>
 
                     <Box component="form" >
-                        <Grid container spacing={2} >
+                        <Grid container spacing={2} style={{marginBottom:'15px'}} >
                             <Grid container item xs={6} direction="column" >
-                                <TextField className={classes.textfield} id="filled-basic" label="Filled" variant="filled"
-                                margin="normal"
+                            <InputLabel>First Name</InputLabel>
+                                <TextField className={classes.textfield} id="filled-basic"  variant="filled"
                                 fullWidth
                                 id="first name"
-                                label="First Name"
                                 name="First Name"
                                 autoFocus
                                 InputLabelProps={{
@@ -158,12 +180,11 @@ function SignIn() {
                                 />                   
                             </Grid>
                         
-                            <Grid container item xs={6} direction="column" >
-                                <TextField className={classes.textfield} id="filled-basic" label="Filled" variant="filled"
-                                    margin="normal"
+                            <Grid container item xs={6} direction="column">
+                                <InputLabel>Last Name</InputLabel>
+                                <TextField className={classes.textfield} id="filled-basic" variant="filled"
                                     fullWidth
                                     name="Last Name"
-                                    label="Last Name"
                                     id="Last Name"
                                     autoFocus
                                     InputLabelProps={{
@@ -173,12 +194,11 @@ function SignIn() {
                             </Grid>
                         </Grid>
 
-                        <Grid container>
-                            <TextField className={classes.textfield} id="filled-basic" label="Filled" variant="filled"
-                                    margin="normal"
+                        <Grid container style={{marginBottom:'15px'}} >
+                            <InputLabel>Email Address</InputLabel>
+                            <TextField className={classes.textfield} id="filled-basic" variant="filled"
                                     fullWidth
-                                    id="first name"
-                                    label="Email Address"
+                                    id="email"
                                     name="Email Address"
                                     type="email"
                                     autoFocus
@@ -188,26 +208,32 @@ function SignIn() {
                                 />           
                         </Grid>
                             
-                        <Grid container>
-                            <TextField className={classes.textfield} id="filled-basic" label="Filled" variant="filled"
-                                    margin="normal"
-                                    fullWidth
-                                    id="first name"
-                                    label="City / Country"
-                                    name="city"
-                                    autoFocus
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                />           
+                        <Grid container style={{marginBottom:'15px'}}>
+                        <InputLabel>City / Country</InputLabel>
+                            <TextField
+                                fullWidth
+                                id="filled-select-country"
+                                select
+                                value={country}
+                                onChange={handleChange}
+                                SelectProps={{
+                                    shrink: true,
+                                }}
+                                variant="filled"
+                                >
+                                {countries.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                    {option.label}
+                                    </option>
+                                ))}
+                            </TextField>
                         </Grid>
 
-                        <Grid container>
-                            <TextField className={classes.textfield} id="filled-basic" label="Filled" variant="filled"
-                                    margin="normal"
+                        <Grid container style={{marginBottom:'15px'}} >
+                            <InputLabel>Password </InputLabel>
+                            <TextField className={classes.textfield} id="filled-basic" variant="filled"
                                     fullWidth
                                     id="password"
-                                    label="Password"
                                     name="password"
                                     type="password"
                                     autoFocus
@@ -217,28 +243,7 @@ function SignIn() {
                                 />           
                         </Grid>
 
-                        <Grid>
-                        <TextField
-                            margin="normal"
-                            fullWidth
-                            id="filled-select-country"
-                            select
-                            label="City / Country"
-                            value={country}
-                            onChange={handleChange}
-                            SelectProps={{
-                                shrink: true,
-                            }}
-                            variant="filled"
-                            >
-                            {countries.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                {option.label}
-                                </option>
-                            ))}
-                            </TextField>
-
-                            
+                        <Grid style={{marginBottom:'15px'}} >
                             <div className={classes.checkbox}>
                                 <FormControlLabel
                                 control={<Checkbox value="remember" color="primary" />}
@@ -247,13 +252,45 @@ function SignIn() {
                             </div>
                             
                             <div className={classes.checkbox}>
-                                <Button style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
+                                <Button onClick={handleOpen} style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
                                     type="submit"
                                     variant="contained"
                                     sx={{ mt: 3, mb: 2 }}
                                 >
                                     Sign Up
                                 </Button>
+                                <Modal
+                                    aria-labelledby="transition-modal-title"
+                                    aria-describedby="transition-modal-description"
+                                    open={open}
+                                    onClose={handleClose}
+                                    closeAfterTransition
+                                    BackdropComponent={Backdrop}
+                                    BackdropProps={{
+                                    timeout: 500,
+                                    }}
+                                >
+                                    <Fade in={open}>
+                                    <Box sx={style}>
+                                        <img className={classes.modal} src='/sentmail.svg'/>
+                                        <Typography id="transition-modal-title" variant="h6" component="h6">
+                                        Verification Link Sent!
+                                        </Typography>
+                                        <Typography id="transition-modal-description" sx={{ mt: 2 }}>
+                                        An email has just been sent to your inbox, kindly check and click the link to proceed with your registration 
+                                        </Typography>
+
+                                        <div className={classes.checkbox}>
+                                            <Button onClick={handleClose} style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
+                                                variant="contained"
+                                                sx={{ mt: 3, mb: 2 }}
+                                            >
+                                                Click to verify email
+                                            </Button>
+                                        </div>
+                                    </Box>
+                                    </Fade>
+                                </Modal>
                             </div> 
 
                             <div className={classes.login}>
