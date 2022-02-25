@@ -1,5 +1,7 @@
-import {Backdrop, Box, Button, Checkbox, CssBaseline,Fade, FormControlLabel, FormGroup, Grid, InputLabel,makeStyles, Modal, Paper,TextField, ThemeProvider, Typography } from '@material-ui/core'
-import React, { useState } from 'react'
+import React, { useState , useEffect} from 'react'
+import {Backdrop, Box, Button, Checkbox, CssBaseline, FormControlLabel, Grid, InputLabel,makeStyles, Paper,TextField, ThemeProvider, Typography } from '@material-ui/core'
+import { Modal } from '@material-ui/core';
+import Modals from './Modals';
 
 const countries = [
  {
@@ -16,18 +18,6 @@ const countries = [
  }
 ];
 
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
-
 const useStyles = makeStyles((theme) => ({
     checkbox:{
         display:"flex",
@@ -38,6 +28,10 @@ const useStyles = makeStyles((theme) => ({
     },
     contentContainer:{
         background:"#233E8B",
+    },
+    error:{
+        color:"red",
+        marginTop:"3px"
     },
     formContainer:{
         background:"white",
@@ -74,14 +68,81 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 function SignIn() {
+  const initialProps = {
+    firstname:"",
+    lastname:"",
+    email:"",
+    password:"",
+    select: "",
+    check:"false"
+}
+
+const [modal, setModal] = useState(false);
+const [formValues, setFormValues] = useState(initialProps);
+const [formErrors, setFormErrors] = useState({});
+const [isSubmit, setIsSubmit] = useState(false);
+
+const handleChange = (e) => {
+    const {name, value} = e.target;
+    setFormValues({...formValues, [name]: value});
+}
+
+const handleSubmit = (e) => {
+    e.preventDefault();
+    setFormErrors(validate(formValues));
+    setModal(!modal);
+    setIsSubmit(true);
+}
+
+const validate = (values) => {
+    const errors = {};
+    const regrex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    if(!values.firstname) {
+        errors.firstname = "First name required"
+    }
+
+    if(!values.lastname) {
+        errors.lastname ="Last name required"
+    }
+
+    if(!values.check) {
+        errors.check = "Agree to the terms and conditions"
+    }
+    
+    if(!values.email) {
+        errors.email = "Email required"
+    } else if (!regrex.test(values.email)) {
+        errors.email = "Invalid email"
+    }
+
+    if(!values.select) {
+        errors.select = "Please choose city"
+    }
+
+    if(!values.password) {
+        errors.password = "Password required";
+    } else if(values.password.length < 4) {
+        errors.password = "Password must be more than 4 characters";
+    } else if(values.password.length > 8) {
+        errors.password = "Password cannot exceed more than 10 characters";
+    }
+
+    return errors;
+}
+
+if(modal) {
+    document.body.classList.remove("active-modal")
+}
+
+
+
   const [country, setCountry] = useState("")
 
-  // Modal Triggers
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  //New Modal 
+  const [show, setShow] = useState(false);
+  
 
-  const handleChange = (e) => {
+  const handleChanges = (e) => {
     setCountry(e.target.value)
   }
   const classes = useStyles();
@@ -172,40 +233,49 @@ function SignIn() {
                                 <TextField className={classes.textfield} id="filled-basic"  variant="filled"
                                 fullWidth
                                 id="first name"
-                                name="First Name"
+                                name="firstname"
+                                onChange={handleChange}
+                                value={formValues.firstname}
                                 autoFocus
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                />                   
+                                />
+                            <p className={classes.error}>{formErrors.firstname}</p>                 
                             </Grid>
                         
                             <Grid container item xs={6} direction="column">
                                 <InputLabel>Last Name</InputLabel>
                                 <TextField className={classes.textfield} id="filled-basic" variant="filled"
                                     fullWidth
-                                    name="Last Name"
+                                    name="lastname"
+                                    value={formValues.lastname}
                                     id="Last Name"
+                                    onChange={handleChange}
                                     autoFocus
                                     InputLabelProps={{
                                         shrink: true,
                                     }}
-                                />   
+                                />
+                                <p className={classes.error}>{formErrors.lastname}</p> 
                             </Grid>
                         </Grid>
 
                         <Grid container style={{marginBottom:'15px'}} >
                             <InputLabel>Email Address</InputLabel>
                             <TextField className={classes.textfield} id="filled-basic" variant="filled"
-                                    fullWidth
-                                    id="email"
-                                    name="Email Address"
-                                    type="email"
-                                    autoFocus
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                />           
+                                fullWidth
+                                id="email"
+                                name="email"
+                                onChange={handleChange}
+                                value={formValues.email}
+                                type="email"
+                                autoFocus
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <p className={classes.error}>{formErrors.email}</p>           
                         </Grid>
                             
                         <Grid container style={{marginBottom:'15px'}}>
@@ -214,8 +284,9 @@ function SignIn() {
                                 fullWidth
                                 id="filled-select-country"
                                 select
-                                value={country}
                                 onChange={handleChange}
+                                name="select"
+                                value={formValues.select}
                                 SelectProps={{
                                     shrink: true,
                                 }}
@@ -227,20 +298,24 @@ function SignIn() {
                                     </option>
                                 ))}
                             </TextField>
+                            <p className={classes.error}>{formErrors.select}</p>
                         </Grid>
 
                         <Grid container style={{marginBottom:'15px'}} >
                             <InputLabel>Password </InputLabel>
                             <TextField className={classes.textfield} id="filled-basic" variant="filled"
-                                    fullWidth
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autoFocus
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                />           
+                                fullWidth
+                                id="password"
+                                name="password"
+                                onChange={handleChange}
+                                values={formValues.password}
+                                type="password"
+                                autoFocus
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />
+                            <p className={classes.error}>{formErrors.password}</p>           
                         </Grid>
 
                         <Grid style={{marginBottom:'15px'}} >
@@ -248,49 +323,21 @@ function SignIn() {
                                 <FormControlLabel
                                 control={<Checkbox value="remember" color="primary" />}
                                 label="Agree to KJK Africa's Terms and conditions?"
+                                onChange={handleChange}
+                                name="check"
+                                value="check"
                             />
                             </div>
                             
                             <div className={classes.checkbox}>
-                                <Button onClick={handleOpen} style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
+                                <Button style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
                                     type="submit"
+                                    onClick={handleSubmit}
                                     variant="contained"
                                     sx={{ mt: 3, mb: 2 }}
                                 >
                                     Sign Up
                                 </Button>
-                                <Modal
-                                    aria-labelledby="transition-modal-title"
-                                    aria-describedby="transition-modal-description"
-                                    open={open}
-                                    onClose={handleClose}
-                                    closeAfterTransition
-                                    BackdropComponent={Backdrop}
-                                    BackdropProps={{
-                                    timeout: 500,
-                                    }}
-                                >
-                                    <Fade in={open}>
-                                    <Box sx={style}>
-                                        <img className={classes.modal} src='/sentmail.svg'/>
-                                        <Typography id="transition-modal-title" variant="h6" component="h6">
-                                        Verification Link Sent!
-                                        </Typography>
-                                        <Typography id="transition-modal-description" sx={{ mt: 2 }}>
-                                        An email has just been sent to your inbox, kindly check and click the link to proceed with your registration 
-                                        </Typography>
-
-                                        <div className={classes.checkbox}>
-                                            <Button onClick={handleClose} style={{background:"#233E8B", color:"white", textTransform:"capitalize"}}
-                                                variant="contained"
-                                                sx={{ mt: 3, mb: 2 }}
-                                            >
-                                                Click to verify email
-                                            </Button>
-                                        </div>
-                                    </Box>
-                                    </Fade>
-                                </Modal>
                             </div> 
 
                             <div className={classes.login}>
@@ -299,9 +346,13 @@ function SignIn() {
                                 </Typography>
                             </div>
                         </Grid>
+
+                        {
+                            Object.keys(formErrors).length === 0 && isSubmit && (
+                                modal &&(<Modal handleSubmit={handleSubmit}/>) 
+                            ) 
+                        }
                     </Box>
-
-
                 </Box>
             </Grid>
         </Grid>
